@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: laravel_app_bot
+    working_dir: /var/www/html
+    volumes:
+      - .:/var/www/html
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - laravel_network
+
+
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_DATABASE: chat
+      DB_USERNAME: root
+      DB_PASSWORD: root
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+
+  mysql:
+    image: mysql:8.0
+    container_name: laravel_mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root       # رمز root
+      MYSQL_DATABASE: chat         # دیتابیس پیش‌فرض
+      # MYSQL_USER: appuser           # اگر نیاز به کاربر معمولی داری
+      # MYSQL_PASSWORD: appsecret     # رمز کاربر معمولی
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - laravel_network
+
+  redis:
+    image: redis:7.0
+    container_name: laravel_redis_bot
+    ports:
+      - "6378:6379"
+    networks:
+      - laravel_network
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: laravel_phpmyadmin
+    environment:
+      PMA_HOST: mysql
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "8080:80"
+    depends_on:
+      - mysql
+    networks:
+      - laravel_network
+
+# Named volumes
+volumes:
+  mysql_data:
+
+# شبکه اختصاصی
+networks:
+  laravel_network:
+    driver: bridge
