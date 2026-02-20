@@ -23,7 +23,7 @@ class UserController extends Controller
             'inline_keyboard' => [
                 [
                     ['text' => '🎫 ثبت تیکت', 'callback_data' => 'new_ticket'],
-                    ['text' => '📂 پیگیری تیکت', 'callback_data' => 'track_ticket']
+                    ['text' => '📂 تیکت های من', 'callback_data' => 'track_ticket']
                 ],
                 [
                     ['text' => '❓ سوالات متداول', 'callback_data' => 'faq'],
