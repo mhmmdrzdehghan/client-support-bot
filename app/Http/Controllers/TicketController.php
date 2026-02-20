@@ -6,6 +6,7 @@ use App\Models\Category;
 use App\Models\Message;
 use App\Models\Tickets;
 use App\Models\User;
+use App\Models\UserRole;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -34,7 +35,7 @@ class TicketController extends Controller
                 'status' => 'open'
             ]);
 
-            Message::create([
+            $message = Message::create([
                 'ticket_id' => $ticket->id,
                 'sender_id' => $user->id,
                 'message' => $text
@@ -45,8 +46,23 @@ class TicketController extends Controller
             Cache::forget("UserPriority:{$chatId}");
             Cache::forget("UserState:{$chatId}");
 
-            $this->sendMessage($chatId, "✅ تیکت شما با موفقیت ثبت شد.", []);
+            $inlineKeyboard = [
+                [
+                    [
+                        'text' => '🏠 Back to Main Menu',
+                        'callback_data' => 'main_menu'
+                    ]
+                ]
+            ];
 
+            $replyMarkup = [
+                'inline_keyboard' => $inlineKeyboard
+            ];
+
+            $this->sendMessage($chatId, "✅ تیکت شما با موفقیت ثبت شد.", $replyMarkup);
+            $this->AlaramTheAdmin($ticket , $message);
+
+            
 
             DB::commit();
 
@@ -59,6 +75,42 @@ class TicketController extends Controller
                 'line'  =>  $e->getLine(),
             ]);
         }    
+    }
+
+    private function AlaramTheAdmin($ticket,$message)
+    {
+        $userrole = UserRole::where('role_id' , 1)->first();
+        $admin = User::where('id' , $userrole->user_id)->first();
+        $chatIdAdmin = $admin->chat_id;
+        $category = Category::find($ticket->category_id);
+
+
+        $user = User::find($message->sender_id);
+
+
+        $text = "📨 یک تیکت جدید از کاربر دریافت شد!
+                👤 اطلاعات کاربر:
+                - نام: {$user->name}
+                📂 دسته‌بندی تیکت:
+                {$category->name}
+                ⚡ اولویت:
+                {$ticket->priorty}
+                📝 متن پیام:
+                {$message->message}
+                📎 فایل‌های پیوست (در صورت وجود):
+                [Attachment Links / File IDs]
+                ⏱ تاریخ ارسال:
+                {$message->created_at}
+                 لطفاً پاسخ مناسب را آماده کرده و به کاربر ارسال کنید.";
+
+
+
+
+        $this->sendMessage($chatIdAdmin, $text, []);
+
+
+
+
     }
 
     public function SelectCategory($data)

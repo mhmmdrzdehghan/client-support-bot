@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\UserRole;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -44,6 +45,7 @@ class UserController extends Controller
             else
             {
                 $user =  User::create(['name'=>$first_name , 'chat_id'=>$chatid]);
+                $this->HandleRole($user);
                 $text = " {{$user->name}} خوش آمدید لطفا از منو زیر استفاده کنید";                
             }
 
@@ -60,6 +62,11 @@ class UserController extends Controller
                 'line'  =>  $e->getLine(),
             ]);
         }
+    }
+
+    private function HandleRole($user)
+    {
+        UserRole::create(['user_id'=>$user->id , 'role_id'=>2]);
     }
 
     public function sendMessage($chatId , $text , $markup)

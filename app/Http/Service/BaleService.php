@@ -63,7 +63,12 @@ class BaleService
         elseif (str_starts_with($data, 'choose_priority:')) 
         {
             $this->ticket->writeText($callback);
-        }            
+        }   
+
+        elseif($data === 'main_menu') 
+        {
+            $this->user->Start($callback); 
+        }
     }
 
 
